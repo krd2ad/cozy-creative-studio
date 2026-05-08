@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,22 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Reset password — Time Tracker" }] }),
-  component: ResetPasswordPage,
-});
-
-function ResetPasswordPage() {
+export default function ResetPassword() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => { document.title = "Reset password — Time Tracker"; }, []);
 
   const handle = async () => {
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (error) toast.error(error.message);
-    else { toast.success("Password updated."); navigate({ to: "/app" }); }
+    else { toast.success("Password updated."); navigate("/app"); }
   };
 
   return (

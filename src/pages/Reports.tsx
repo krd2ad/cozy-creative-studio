@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,20 +18,17 @@ type Entry = {
   tlp_id: string; customer_id: string; product_id: string;
 };
 
-export const Route = createFileRoute("/_authenticated/reports")({
-  head: () => ({ meta: [{ title: "Reports — Time Tracker" }] }),
-  component: ReportsPage,
-});
-
 const isoDate = (d: Date) => format(d, "yyyy-MM-dd");
 
-function ReportsPage() {
+export default function Reports() {
   const { user } = useAuth();
   const [start, setStart] = useState(isoDate(subDays(new Date(), 29)));
   const [end, setEnd] = useState(isoDate(new Date()));
   const [tlpFilter, setTlpFilter] = useState<string>("all");
   const [customerFilter, setCustomerFilter] = useState<string>("all");
   const [productFilter, setProductFilter] = useState<string>("all");
+
+  useEffect(() => { document.title = "Reports — Time Tracker"; }, []);
 
   const { data: items = [] } = useQuery({
     queryKey: ["list_items_all", user?.id],
@@ -110,15 +106,9 @@ function ReportsPage() {
         <div className="grid gap-3 md:grid-cols-5">
           <Field label="Start"><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
           <Field label="End"><Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
-          <Field label="TLP">
-            <FilterSelect value={tlpFilter} onChange={setTlpFilter} items={tlps} />
-          </Field>
-          <Field label="Customer">
-            <FilterSelect value={customerFilter} onChange={setCustomerFilter} items={customers} />
-          </Field>
-          <Field label="Product">
-            <FilterSelect value={productFilter} onChange={setProductFilter} items={products} />
-          </Field>
+          <Field label="TLP"><FilterSelect value={tlpFilter} onChange={setTlpFilter} items={tlps} /></Field>
+          <Field label="Customer"><FilterSelect value={customerFilter} onChange={setCustomerFilter} items={customers} /></Field>
+          <Field label="Product"><FilterSelect value={productFilter} onChange={setProductFilter} items={products} /></Field>
         </div>
       </Card>
 

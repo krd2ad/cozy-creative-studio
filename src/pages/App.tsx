@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, addDays, subDays, parseISO } from "date-fns";
@@ -18,11 +17,6 @@ import {
 import { toast } from "sonner";
 import { HOUR_OPTIONS } from "@/lib/csv";
 
-export const Route = createFileRoute("/_authenticated/app")({
-  head: () => ({ meta: [{ title: "Time — Time Tracker" }] }),
-  component: AppPage,
-});
-
 type ListItem = { id: string; name: string; kind: "tlp" | "customer" | "product"; active: boolean };
 type Entry = {
   id: string; entry_date: string; description: string; hours: number;
@@ -31,11 +25,13 @@ type Entry = {
 
 const isoDate = (d: Date) => format(d, "yyyy-MM-dd");
 
-function AppPage() {
+export default function AppPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [date, setDate] = useState<Date>(new Date());
   const dateStr = isoDate(date);
+
+  useEffect(() => { document.title = "Time — Time Tracker"; }, []);
 
   const { data: items = [] } = useQuery({
     queryKey: ["list_items", user?.id],
@@ -152,7 +148,6 @@ function NewEntryForm({
   const [description, setDescription] = useState("");
   const [hours, setHours] = useState("0.25");
 
-  // Reset on date change
   useEffect(() => { setDescription(""); }, [dateStr]);
 
   const save = useMutation({

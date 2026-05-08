@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,19 +7,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LogOut, KeyRound } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings — Time Tracker" }] }),
-  component: SettingsPage,
-});
-
-function SettingsPage() {
+export default function Settings() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => { document.title = "Settings — Time Tracker"; }, []);
 
   const handleReset = async () => {
     if (!user?.email) return;
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}${window.location.pathname}#/reset-password`,
     });
     if (error) toast.error(error.message);
     else toast.success("Password reset email sent.");
@@ -37,7 +35,7 @@ function SettingsPage() {
         <Button variant="outline" onClick={handleReset}>
           <KeyRound className="mr-2 h-4 w-4" /> Send password reset email
         </Button>
-        <Button variant="destructive" onClick={async () => { await signOut(); navigate({ to: "/" }); }}>
+        <Button variant="destructive" onClick={async () => { await signOut(); navigate("/"); }}>
           <LogOut className="mr-2 h-4 w-4" /> Sign out
         </Button>
       </Card>

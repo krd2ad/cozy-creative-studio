@@ -1,18 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, ListChecks, BarChart3, Download } from "lucide-react";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Time Tracker — Log your hours" },
-      { name: "description", content: "Personal time tracker. Log hours in 15-minute increments. Export to CSV." },
-    ],
-  }),
-  component: Landing,
-});
-
-function Landing() {
+export default function Landing() {
+  useEffect(() => { document.title = "Time Tracker — Log your hours"; }, []);
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">

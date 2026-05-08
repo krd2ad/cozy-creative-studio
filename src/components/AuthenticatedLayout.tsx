@@ -1,25 +1,17 @@
-import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Clock, LogOut } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated")({
-  component: AuthenticatedLayout,
-});
-
-function AuthenticatedLayout() {
+export function AuthenticatedLayout() {
   const { session, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { pathname } = useLocation();
 
-  useEffect(() => {
-    if (!loading && !session) navigate({ to: "/login" });
-  }, [session, loading, navigate]);
-
-  if (loading || !session) {
+  if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   }
+  if (!session) return <Navigate to="/login" replace />;
 
   const navItems = [
     { to: "/app", label: "Time" },
@@ -38,7 +30,7 @@ function AuthenticatedLayout() {
           </Link>
           <nav className="flex items-center gap-1">
             {navItems.map((it) => {
-              const active = path === it.to || path.startsWith(it.to + "/");
+              const active = pathname === it.to || pathname.startsWith(it.to + "/");
               return (
                 <Link
                   key={it.to}
@@ -51,7 +43,7 @@ function AuthenticatedLayout() {
                 </Link>
               );
             })}
-            <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/" }); }}>
+            <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate("/"); }}>
               <LogOut className="h-4 w-4" />
             </Button>
           </nav>

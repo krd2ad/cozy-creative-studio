@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -10,25 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Clock } from "lucide-react";
 
-export const Route = createFileRoute("/login")({
-  head: () => ({
-    meta: [
-      { title: "Sign in — Time Tracker" },
-      { name: "description", content: "Sign in to your personal time tracker." },
-    ],
-  }),
-  component: LoginPage,
-});
-
-function LoginPage() {
+export default function Login() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => { document.title = "Sign in — Time Tracker"; }, []);
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/app" });
+    if (!loading && session) navigate("/app");
   }, [session, loading, navigate]);
 
   const handleEmail = async (mode: "signin" | "signup") => {
@@ -38,7 +29,7 @@ function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/app` },
+          options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}#/app` },
         });
         if (error) throw error;
         toast.success("Account created. Check your email to confirm.");
@@ -57,7 +48,7 @@ function LoginPage() {
     setBusy(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/app`,
+        redirect_uri: `${window.location.origin}${window.location.pathname}#/app`,
       });
       if (result.error) {
         toast.error(result.error.message ?? "Google sign-in failed");
@@ -65,7 +56,7 @@ function LoginPage() {
         return;
       }
       if (result.redirected) return;
-      navigate({ to: "/app" });
+      navigate("/app");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Google sign-in failed");
       setBusy(false);

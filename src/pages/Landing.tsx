@@ -1,10 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, ListChecks, BarChart3, Download } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Landing() {
   useEffect(() => { document.title = "Time Tracker — Log your hours"; }, []);
+  const { session, loading } = useAuth();
+  if (!loading && session) return <Navigate to="/app" replace />;
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">

@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,13 +12,9 @@ import { toast } from "sonner";
 type Kind = "tlp" | "customer" | "product";
 type ListItem = { id: string; name: string; kind: Kind; active: boolean };
 
-export const Route = createFileRoute("/_authenticated/lists")({
-  head: () => ({ meta: [{ title: "Lists — Time Tracker" }] }),
-  component: ListsPage,
-});
-
-function ListsPage() {
+export default function Lists() {
   const { user } = useAuth();
+  useEffect(() => { document.title = "Lists — Time Tracker"; }, []);
 
   const { data: items = [] } = useQuery({
     queryKey: ["list_items_all", user?.id],

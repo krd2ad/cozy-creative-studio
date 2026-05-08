@@ -1,119 +1,81 @@
-## Personal Time Tracker — Build Plan
+## Goal
 
-### Heads-up on stack (one important deviation)
-Your brief asks for **React + Vite + GitHub Pages**. This Lovable project is a **TanStack Start** template (a React + Vite framework with SSR). The framework can't be swapped, but everything else in your brief works as written. Two practical implications:
+Convert this TanStack Start (SSR) project into a plain **Vite + React SPA** that uses **`react-router-dom` HashRouter**, so it can be hosted on GitHub Pages. Same Supabase backend (Lovable Cloud) — no data migration.
 
-- **Backend: external Supabase project (per brief).** I'll wire your own Supabase URL + publishable key into the app and run migrations against it. You'll paste those two values when prompted.
-- **Hosting: GitHub Pages won't serve a TanStack Start app cleanly** (it's not pure static). Recommend publishing via Lovable's one-click hosting (free) instead. If you insist on GitHub Pages later, we'd need to refactor to plain Vite — say the word and I'll do that as a follow-up.
+## What changes
 
-Everything else (features, UX, schema, CSV export, 15-min increments) follows the brief exactly.
+### 1. Strip TanStack Start
 
----
+Remove:
+- `@tanstack/react-start`, `@tanstack/react-start-plugin`, the TanStack Vite plugin
+- `src/router.tsx`, `src/routeTree.gen.ts`
+- `src/routes/__root.tsx`, `src/routes/api/*` (none currently in use beyond auth)
+- `src/integrations/supabase/auth-middleware.ts`, `src/integrations/supabase/client.server.ts` (no server fns left)
+- `_authenticated.tsx` layout file (replaced by a React component)
 
-### Design — Warm "Terracotta + Cream"
-Replaces the blue/white theme with editorial warm tones, all defined as oklch tokens in `src/styles.css`:
+Keep:
+- `src/integrations/supabase/client.ts` (browser client, RLS-scoped — already how the app talks to data)
+- `src/integrations/supabase/types.ts`
+- All UI components, hooks, styles, business logic
 
-- Background: cream `oklch(0.97 0.02 75)`
-- Foreground: deep brown `oklch(0.25 0.04 50)`
-- Primary: terracotta `oklch(0.62 0.16 40)` with a glow variant for gradients
-- Accent: warm amber `oklch(0.78 0.13 70)`
-- Muted: sand `oklch(0.92 0.03 75)`
-- Border: dusty clay `oklch(0.86 0.04 60)`
-- Destructive: deep rust `oklch(0.55 0.22 28)`
-- Dark mode: espresso background with warm cream foreground
+### 2. New SPA shell
 
-Typography: Fraunces (display, serif) for headings + Inter (body) for UI — a touch of editorial warmth without being heavy.
+- `src/main.tsx` — mounts `<App />`
+- `src/App.tsx` — sets up `HashRouter`, `QueryClientProvider`, `AuthProvider`, `Toaster`, route table
+- `src/components/AuthenticatedLayout.tsx` — top nav + `<Outlet />`, redirects to `/login` if no session
+- `index.html` — Vite entry
 
----
+### 3. Port routes
 
-### Routes (file-based, TanStack Start)
+Each `src/routes/*.tsx` page becomes a `src/pages/*.tsx` component. Replace:
+- `createFileRoute(...)` → plain function component
+- `<Link to="/x">` from `@tanstack/react-router` → from `react-router-dom`
+- `useNavigate`, `useParams`, `useLocation` → `react-router-dom` equivalents
+- Any `loader` / server-fn data fetching → `useQuery` against the browser Supabase client (already the pattern)
 
-```text
-src/routes/
-├── __root.tsx                   shell + providers + toaster
-├── index.tsx                    marketing landing → "Sign in" CTA
-├── login.tsx                    email/password + Google sign-in
-├── _authenticated.tsx           auth gate (beforeLoad redirect)
-├── _authenticated/app.tsx       main daily time entry page (default route after login)
-├── _authenticated/lists.tsx     manage TLP / Customer / Product
-├── _authenticated/reports.tsx   filters, summary, grouped tables, CSV export
-└── _authenticated/settings.tsx  profile + logout
+Routes:
+```
+/                      → Landing
+/login                 → Login (email + Google)
+/reset-password        → Reset password
+/app                   → Daily entry (protected)
+/lists                 → TLP/Customer/Product (protected)
+/reports               → Reports + CSV (protected)
+/settings              → Profile + logout (protected)
 ```
 
-All authenticated pages share a top nav: **Time Tracker · Lists · Reports · Settings · Logout**.
+### 4. Vite config for GH Pages
 
----
+- `vite.config.ts`: replace TanStack plugin with `@vitejs/plugin-react`, set `base: '/<repo-name>/'`
+- Hardcode Supabase URL + publishable key via `import.meta.env.VITE_*` (already public)
+- Add `public/404.html` as a safety net (HashRouter doesn't strictly need it, but harmless)
 
-### Database (Supabase, with RLS)
+### 5. GitHub Actions workflow
 
-```text
-list_items
-  id uuid pk
-  user_id uuid fk auth.users
-  kind text check in ('tlp','customer','product')
-  name text
-  active boolean default true
-  created_at timestamptz
+`.github/workflows/deploy.yml`:
+- Trigger on push to `main`
+- Install deps with bun
+- `bun run build`
+- Deploy `dist/` to `gh-pages` branch via `peaceiris/actions-gh-pages` (or GitHub Pages official action)
 
-time_entries
-  id uuid pk
-  user_id uuid fk auth.users
-  entry_date date
-  tlp_id uuid fk list_items
-  customer_id uuid fk list_items
-  product_id uuid fk list_items
-  description text
-  hours numeric(4,2) check (hours > 0 AND (hours * 4) = floor(hours * 4))
-  created_at timestamptz
-  updated_at timestamptz
-```
+Auth redirect URLs in Supabase need to be updated by you to include `https://<username>.github.io/<repo>/` after deployment.
 
-- RLS: every row scoped to `auth.uid() = user_id` for select/insert/update/delete.
-- DB-level quarter-hour check enforces the 15-min rule.
-- List items are **soft-archived** (toggle `active`) — historical entries keep resolving their names via FK.
-- Trigger: on new user signup, seed sample list items (3–5 each for TLP / Customer / Product) so the user can log time immediately.
+### 6. Things you lose
 
----
+- SSR / server-rendered SEO (HashRouter URLs aren't crawlable by section)
+- Ability to add `createServerFn` later (any backend logic must be Supabase RPC, edge functions, or RLS-scoped client queries)
+- Lovable's one-click publish for THIS project (you'd be hosting elsewhere)
 
-### Main `/app` page — daily time entry
+## What I need from you
 
-- Header line: `Time Tracker | Friday, May 8, 2026 | 6.25 hours`
-- Mini month calendar (left rail on desktop, collapsible drawer on mobile) with prev/next arrows + "Today" button. Days with entries get a small terracotta dot.
-- Entry form row: TLP · Customer · Product · Description · Hours dropdown (0.25 → 12.00 step 0.25) · **Add Entry**.
-- Entries table below: TLP · Customer · Product · Description · Hours · Edit / Delete.
-- Inline edit (row turns into editable form), delete asks for confirmation (AlertDialog).
-- Daily total recalculates instantly on add/edit/delete via TanStack Query optimistic updates.
+1. **Repo name** for the `base` path (e.g. `time-tracker` → `base: '/time-tracker/'`). If you'll use a custom domain or `username.github.io` root, say so — the base becomes `/`.
+2. Confirm you've already connected this Lovable project to GitHub (or will, before merging).
 
-### `/lists` page
-Three side-by-side cards (TLP, Customer, Product), each with: add input, list of items with active/inactive badge, edit-in-place, archive/restore button.
+## Technical notes (skim if non-technical)
 
-### `/reports` page
-- Filters: start date, end date (default = last 30 days), optional TLP / Customer / Product.
-- Summary cards: Total hours · # entries · Avg hours/day · Top TLP · Top Customer · Top Product.
-- Tables: hours by date · by TLP · by customer · by product.
-- **Download CSV** button — exports the filtered raw entries via browser Blob (`tlp,customer,product,description,hours,date`).
+- HashRouter chosen over BrowserRouter to avoid the GH Pages 404-on-refresh issue without server-side config.
+- The Supabase publishable key is safe to bake into the bundle; RLS still enforces per-user access.
+- Google OAuth needs its authorized redirect URIs updated to include the GH Pages URL.
+- The migrations under `supabase/migrations/` stay where they are — they describe the cloud DB and aren't run from the SPA.
 
-### `/settings` page
-Email shown, "Sign out" button, "Change password" link (sends reset email). Password reset page at `/reset-password` (public route).
-
-### `/login` page
-Email + password (sign in / sign up tabs) and a **Continue with Google** button. Auth uses the browser Supabase client; session persists; on success we redirect back to the originally requested protected route.
-
----
-
-### Technical details
-
-- **Auth state** lives in a `useAuth()` hook backed by `supabase.auth.onAuthStateChange` + `getSession`. Session passed into router context for `_authenticated.beforeLoad` gate.
-- **Data layer** uses TanStack Query against the browser Supabase client (RLS handles authorization). No server functions needed for this MVP — keeps it close to the brief's "no custom backend" constraint.
-- **Forms** use react-hook-form + zod for validation (15-minute increment + required fields enforced both client and DB side).
-- **shadcn/ui** components: Button, Card, Dialog, AlertDialog, Select, Input, Calendar, Table, Tabs, Badge, Sonner toasts.
-- **Google OAuth**: enabled in Supabase dashboard (you'll need to add a Google client ID/secret there per Supabase docs — quick 5-min setup, I'll link the steps in chat after build).
-
----
-
-### What I'll need from you after the plan is approved
-1. Your Supabase project URL + publishable (anon) key — I'll prompt for them.
-2. After deploy, you'll add Google OAuth credentials in your Supabase dashboard's Auth → Providers panel (I'll give you the exact steps and the redirect URL to paste).
-
-### Out of scope for v1 (per brief)
-Outlook integration, charts, multi-user sharing, mobile app.
+Reply with the repo name (and custom domain if any) and I'll execute.

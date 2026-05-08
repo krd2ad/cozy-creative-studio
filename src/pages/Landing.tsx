@@ -5,7 +5,7 @@ import { Clock, ListChecks, BarChart3, Download } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function Landing() {
-  useEffect(() => { document.title = "Time Tracker — Log your hours"; }, []);
+  useEffect(() => { document.title = "Clockwork — Log your hours"; }, []);
   const { session, loading } = useAuth();
   if (!loading && session) return <Navigate to="/app" replace />;
   return (
@@ -14,7 +14,7 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />
-            <span className="font-display text-lg font-semibold">Time Tracker</span>
+            <span className="font-display text-lg font-semibold">Clockwork</span>
           </div>
           <Button asChild>
             <Link to="/login">Sign in</Link>
@@ -81,7 +81,7 @@ export default function Landing() {
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 text-sm text-muted-foreground">
           <span className="flex items-center gap-2"><Download className="h-4 w-4" /> Your data, exportable as CSV.</span>
-          <span>© Time Tracker</span>
+          <span>© Clockwork</span>
         </div>
       </footer>
     </div>

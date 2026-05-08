@@ -31,7 +31,7 @@ export default function AppPage() {
   const [date, setDate] = useState<Date>(new Date());
   const dateStr = isoDate(date);
 
-  useEffect(() => { document.title = "Time — Time Tracker"; }, []);
+  useEffect(() => { document.title = "Time — Clockwork"; }, []);
 
   const { data: items = [] } = useQuery({
     queryKey: ["list_items", user?.id],

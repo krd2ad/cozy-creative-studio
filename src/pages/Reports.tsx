@@ -28,7 +28,7 @@ export default function Reports() {
   const [customerFilter, setCustomerFilter] = useState<string>("all");
   const [productFilter, setProductFilter] = useState<string>("all");
 
-  useEffect(() => { document.title = "Reports — Time Tracker"; }, []);
+  useEffect(() => { document.title = "Reports — Clockwork"; }, []);
 
   const { data: items = [] } = useQuery({
     queryKey: ["list_items_all", user?.id],

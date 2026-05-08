@@ -26,7 +26,7 @@ export function AuthenticatedLayout() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
           <Link to="/app" className="flex items-center gap-2 text-primary">
             <Clock className="h-5 w-5" />
-            <span className="font-display text-lg font-semibold">Time Tracker</span>
+            <span className="font-display text-lg font-semibold">Clockwork</span>
           </Link>
           <nav className="flex items-center gap-1">
             {navItems.map((it) => {

@@ -14,7 +14,7 @@ type ListItem = { id: string; name: string; kind: Kind; active: boolean };
 
 export default function Lists() {
   const { user } = useAuth();
-  useEffect(() => { document.title = "Lists — Time Tracker"; }, []);
+  useEffect(() => { document.title = "Lists — Clockwork"; }, []);
 
   const { data: items = [] } = useQuery({
     queryKey: ["list_items_all", user?.id],

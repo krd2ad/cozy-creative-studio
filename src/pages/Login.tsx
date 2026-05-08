@@ -16,7 +16,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { document.title = "Sign in — Time Tracker"; }, []);
+  useEffect(() => { document.title = "Sign in — Clockwork"; }, []);
   useEffect(() => {
     if (!loading && session) navigate("/app");
   }, [session, loading, navigate]);
@@ -68,7 +68,7 @@ export default function Login() {
       <div className="w-full max-w-sm">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2 text-primary">
           <Clock className="h-5 w-5" />
-          <span className="font-display text-xl font-semibold">Time Tracker</span>
+          <span className="font-display text-xl font-semibold">Clockwork</span>
         </Link>
 
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">

@@ -12,7 +12,7 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { document.title = "Reset password — Time Tracker"; }, []);
+  useEffect(() => { document.title = "Reset password — Clockwork"; }, []);
 
   const handle = async () => {
     setBusy(true);

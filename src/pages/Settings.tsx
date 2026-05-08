@@ -11,7 +11,7 @@ export default function Settings() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => { document.title = "Settings — Time Tracker"; }, []);
+  useEffect(() => { document.title = "Settings — Clockwork"; }, []);
 
   const handleReset = async () => {
     if (!user?.email) return;

@@ -33,9 +33,6 @@ export default function Landing() {
               <Button asChild size="lg">
                 <Link to="/login">Get started</Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <a href="#features">See features</a>
-              </Button>
             </div>
           </div>
 

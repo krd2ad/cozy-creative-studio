@@ -86,7 +86,7 @@ export default function AppPage() {
             mode="single"
             selected={date}
             onSelect={(d) => d && setDate(d)}
-            className="rounded-md"
+            className="rounded-md p-0"
           />
         </Card>
 
